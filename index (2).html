@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIBE — Social Platform</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #f0f2f8;
+    --white: #ffffff;
+    --surface: #f8f9fe;
+    --primary: #6c5ce7;
+    --primary-light: #a29bfe;
+    --secondary: #fd79a8;
+    --accent: #00cec9;
+    --warn: #fdcb6e;
+    --text: #2d3436;
+    --muted: #636e72;
+    --border: #e0e3f0;
+    --shadow: 0 4px 24px rgba(108,92,231,.1);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); font-family:'Nunito',sans-serif; color:var(--text); min-height:100vh; }
+
+  /* LAYOUT */
+  .layout { display:grid; grid-template-columns: 280px 1fr 320px; gap:0; min-height:100vh; }
+
+  /* SIDEBAR LEFT */
+  .sidebar-left {
+    background:var(--white); border-right:1px solid var(--border);
+    padding:24px 16px; position:sticky; top:0; height:100vh; overflow-y:auto;
+    display:flex; flex-direction:column;
+  }
+  .logo {
+    font-family:'Poppins',sans-serif; font-size:1.9rem; font-weight:800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text; padding:8px 12px; margin-bottom:24px;
+  }
+  .nav-item {
+    display:flex; align-items:center; gap:14px;
+    padding:13px 16px; border-radius:14px; cursor:pointer;
+    color:var(--muted); font-weight:600; font-size:.95rem;
+    transition:.2s; margin-bottom:4px; border:none; background:none; width:100%; text-align:left;
+  }
+  .nav-item:hover { background:var(--bg); color:var(--primary); }
+  .nav-item.active { background:linear-gradient(135deg,rgba(108,92,231,.12),rgba(253,121,168,.08)); color:var(--primary); }
+  .nav-icon { font-size:1.3rem; width:28px; text-align:center; }
+  .nav-badge {
+    margin-left:auto; background:var(--secondary); color:#fff;
+    font-size:.7rem; padding:2px 8px; border-radius:10px; font-weight:700;
+  }
+  .sidebar-divider { border:none; border-top:1px solid var(--border); margin:12px 0; }
+  .sidebar-profile {
+    margin-top:auto; display:flex; align-items:center; gap:12px;
+    padding:14px 16px; border-radius:14px; background:var(--bg); cursor:pointer;
+  }
+  .avatar { width:42px; height:42px; border-radius:50%; object-fit:cover; }
+  .avatar-lg { width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid var(--primary); }
+  .profile-name { font-weight:700; font-size:.9rem; }
+  .profile-handle { font-size:.78rem; color:var(--muted); }
+
+  /* MAIN FEED */
+  .feed { padding:24px; max-width:680px; margin:0 auto; }
+  .feed-header {
+    background:var(--white); border-radius:20px; padding:20px;
+    box-shadow:var(--shadow); margin-bottom:20px;
+    display:flex; gap:14px; align-items:flex-start;
+  }
+  .post-input {
+    flex:1; background:var(--bg); border:2px solid transparent;
+    border-radius:14px; padding:14px 18px; font-family:inherit;
+    font-size:.95rem; resize:none; outline:none; color:var(--text);
+    transition:.2s; min-height:70px;
+  }
+  .post-input:focus { border-color:var(--primary-light); background:var(--white); }
+  .post-input::placeholder { color:var(--muted); }
+  .post-actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; align-items:center; }
+  .post-action-btn {
+    border:none; background:var(--bg); color:var(--muted);
+    padding:8px 14px; border-radius:10px; cursor:pointer;
+    font-size:.83rem; font-weight:600; display:flex; align-items:center; gap:6px; transition:.2s;
+  }
+  .post-action-btn:hover { background:rgba(108,92,231,.1); color:var(--primary); }
+  .post-submit {
+    margin-left:auto; background:linear-gradient(135deg,var(--primary),var(--secondary));
+    color:#fff; border:none; padding:10px 24px; border-radius:12px;
+    font-weight:700; cursor:pointer; font-size:.9rem; transition:.2s;
+  }
+  .post-submit:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(108,92,231,.4); }
+
+  /* STORIES */
+  .stories {
+    background:var(--white); border-radius:20px; padding:20px;
+    box-shadow:var(--shadow); margin-bottom:20px;
+  }
+  .stories-title { font-weight:700; font-size:.9rem; color:var(--muted); letter-spacing:.5px; text-transform:uppercase; margin-bottom:16px; }
+  .stories-scroll { display:flex; gap:14px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+  .stories-scroll::-webkit-scrollbar { display:none; }
+  .story-item { display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; flex-shrink:0; }
+  .story-ring {
+    width:64px; height:64px; border-radius:50%; padding:3px;
+    background:linear-gradient(135deg,var(--primary),var(--secondary),var(--accent));
+  }
+  .story-ring.seen { background:#ddd; }
+  .story-img { width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid var(--white); }
+  .story-name { font-size:.73rem; font-weight:600; color:var(--text); text-align:center; max-width:64px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .story-add {
+    width:64px; height:64px; border-radius:50%; background:var(--bg);
+    border:2px dashed var(--primary); display:flex; align-items:center; justify-content:center;
+    font-size:1.6rem; color:var(--primary); cursor:pointer; flex-shrink:0;
+  }
+
+  /* POST CARD */
+  .post-card {
+    background:var(--white); border-radius:20px; padding:20px;
+    box-shadow:var(--shadow); margin-bottom:20px;
+    transition: box-shadow .2s;
+  }
+  .post-card:hover { box-shadow:0 8px 32px rgba(108,92,231,.15); }
+  .post-top { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .post-user-info { flex:1; }
+  .post-username { font-weight:700; font-size:.95rem; }
+  .post-time { font-size:.77rem; color:var(--muted); }
+  .post-menu {
+    background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.3rem; padding:4px 8px; border-radius:8px;
+  }
+  .post-menu:hover { background:var(--bg); }
+  .post-text { font-size:.97rem; line-height:1.7; margin-bottom:14px; }
+  .post-text .hashtag { color:var(--primary); cursor:pointer; font-weight:600; }
+  .post-text .mention { color:var(--accent); cursor:pointer; font-weight:600; }
+  .post-img { width:100%; border-radius:14px; margin-bottom:14px; max-height:400px; object-fit:cover; cursor:pointer; }
+  .post-img-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+  .post-img-grid img { border-radius:12px; width:100%; height:180px; object-fit:cover; cursor:pointer; }
+  .post-stats { display:flex; gap:6px; margin-bottom:12px; }
+  .post-stat-chip {
+    font-size:.78rem; color:var(--muted); background:var(--bg); padding:3px 10px; border-radius:8px;
+  }
+  .post-reactions { display:flex; gap:4px; }
+  .reaction-btn {
+    flex:1; border:none; background:none; display:flex; align-items:center; justify-content:center;
+    gap:7px; padding:10px; border-radius:12px; cursor:pointer; font-size:.88rem; font-weight:600;
+    color:var(--muted); transition:.2s;
+  }
+  .reaction-btn:hover { background:var(--bg); }
+  .reaction-btn.liked { color:var(--secondary); }
+  .reaction-btn.commented { color:var(--primary); }
+  .reaction-btn.shared { color:var(--accent); }
+  .divider { border:none; border-top:1px solid var(--border); margin:12px 0; }
+
+  /* COMMENTS */
+  .comment-input-row { display:flex; gap:10px; align-items:center; margin-top:12px; }
+  .comment-input {
+    flex:1; background:var(--bg); border:2px solid transparent; border-radius:12px;
+    padding:10px 14px; font-family:inherit; font-size:.88rem; outline:none; color:var(--text);
+    transition:.2s;
+  }
+  .comment-input:focus { border-color:var(--primary-light); background:var(--white); }
+  .comment-send {
+    background:linear-gradient(135deg,var(--primary),var(--secondary));
+    border:none; border-radius:10px; padding:10px 16px;
+    color:#fff; cursor:pointer; font-size:1rem; transition:.2s;
+  }
+  .comment-send:hover { transform:scale(1.05); }
+  .comments-list { margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+  .comment-item { display:flex; gap:10px; }
+  .comment-bubble {
+    background:var(--bg); border-radius:12px; padding:10px 14px; flex:1;
+  }
+  .comment-author { font-weight:700; font-size:.85rem; margin-bottom:3px; }
+  .comment-text { font-size:.87rem; color:var(--text); }
+  .comment-actions { display:flex; gap:12px; margin-top:6px; }
+  .comment-action { background:none; border:none; font-size:.77rem; color:var(--muted); cursor:pointer; font-weight:600; }
+  .comment-action:hover { color:var(--primary); }
+
+  /* SIDEBAR RIGHT */
+  .sidebar-right {
+    background:var(--white); border-left:1px solid var(--border);
+    padding:24px 20px; position:sticky; top:0; height:100vh; overflow-y:auto;
+  }
+  .widget { margin-bottom:28px; }
+  .widget-title { font-weight:800; font-size:1.05rem; margin-bottom:16px; }
+
+  /* SUGGESTED USERS */
+  .suggested-user { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .follow-btn {
+    margin-left:auto; background:transparent; border:2px solid var(--primary);
+    color:var(--primary); padding:6px 16px; border-radius:20px; cursor:pointer;
+    font-weight:700; font-size:.8rem; transition:.2s;
+  }
+  .follow-btn:hover, .follow-btn.following {
+    background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff; border-color:transparent;
+  }
+  .follow-btn.following { background:var(--bg); color:var(--muted); border-color:var(--border); }
+
+  /* TRENDING */
+  .trend-item { padding:10px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+  .trend-item:last-child { border-bottom:none; }
+  .trend-cat { font-size:.73rem; color:var(--muted); letter-spacing:.5px; }
+  .trend-tag { font-weight:700; font-size:.95rem; color:var(--text); margin:3px 0; }
+  .trend-count { font-size:.78rem; color:var(--muted); }
+  .trend-item:hover .trend-tag { color:var(--primary); }
+
+  /* NOTIFICATION TOAST */
+  .toast-notif {
+    position:fixed; top:20px; right:20px; z-index:999;
+    background:var(--white); border-radius:16px; padding:14px 20px;
+    box-shadow:0 8px 32px rgba(0,0,0,.15); border-left:4px solid var(--primary);
+    display:flex; align-items:center; gap:12px; min-width:280px;
+    transform:translateX(120%); opacity:0; transition:.3s;
+  }
+  .toast-notif.show { transform:translateX(0); opacity:1; }
+  .toast-notif .icon { font-size:1.5rem; }
+  .toast-notif .msg { font-size:.9rem; font-weight:600; }
+  .toast-notif .sub { font-size:.78rem; color:var(--muted); margin-top:2px; }
+
+  /* IMAGE VIEWER */
+  .img-viewer {
+    position:fixed; inset:0; background:rgba(0,0,0,.9); z-index:500;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition:.3s;
+  }
+  .img-viewer.open { opacity:1; pointer-events:all; }
+  .img-viewer img { max-width:90vw; max-height:90vh; border-radius:12px; }
+  .img-viewer-close {
+    position:absolute; top:20px; right:20px; background:rgba(255,255,255,.2);
+    border:none; color:#fff; font-size:1.5rem; width:44px; height:44px;
+    border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ACTIVE INDICATOR */
+  .online-dot { width:10px; height:10px; background:var(--accent); border-radius:50%; border:2px solid var(--white); position:absolute; bottom:0; right:0; }
+  .avatar-wrap { position:relative; display:inline-block; }
+
+  /* SEARCH BAR */
+  .search-wrap { position:relative; margin-bottom:24px; }
+  .search-input {
+    width:100%; background:var(--bg); border:2px solid transparent; border-radius:12px;
+    padding:12px 16px 12px 42px; font-family:inherit; font-size:.9rem;
+    outline:none; color:var(--text); transition:.2s;
+  }
+  .search-input:focus { border-color:var(--primary-light); background:var(--white); }
+  .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:1.1rem; }
+
+  .tag { display:inline-block; background:rgba(108,92,231,.1); color:var(--primary); font-size:.75rem; padding:3px 10px; border-radius:8px; font-weight:700; margin-right:6px; margin-bottom:4px; cursor:pointer; }
+  .tag:hover { background:var(--primary); color:#fff; }
+
+  .page-panel { display:flex; flex-direction:column; gap:14px; }
+  .page-card {
+    background:var(--white); border-radius:20px; padding:18px 20px;
+    box-shadow:var(--shadow);
+  }
+  .page-card h3 { margin:0 0 8px; font-size:1.02rem; }
+  .page-card p { color:var(--muted); line-height:1.6; margin:0; }
+  .page-list { display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+  .page-item {
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    padding:12px 14px; border-radius:14px; background:var(--surface);
+  }
+  .page-pill {
+    background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff;
+    padding:6px 10px; border-radius:999px; font-size:.75rem; font-weight:700;
+  }
+  .live-dot {
+    width:10px; height:10px; border-radius:50%; background:var(--accent); display:inline-block; margin-right:6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar-left">
+    <div class="logo">VIBE ✦</div>
+
+    <button class="nav-item active" onclick="setPage(this,'home')"><span class="nav-icon">🏠</span> Home</button>
+    <button class="nav-item" onclick="setPage(this,'explore')"><span class="nav-icon">🔍</span> Explore</button>
+    <button class="nav-item" onclick="setPage(this,'notifs')"><span class="nav-icon">🔔</span> Notifications <span class="nav-badge">3</span></button>
+    <button class="nav-item" onclick="setPage(this,'messages')"><span class="nav-icon">💬</span> Messages <span class="nav-badge">5</span></button>
+    <button class="nav-item" onclick="setPage(this,'bookmarks')"><span class="nav-icon">🔖</span> Bookmarks</button>
+    <button class="nav-item" onclick="setPage(this,'profile')"><span class="nav-icon">👤</span> Profile</button>
+
+    <hr class="sidebar-divider">
+    <p style="font-size:.75rem;color:var(--muted);padding:8px 16px;font-weight:700;letter-spacing:1px;">COMMUNITIES</p>
+    <button class="nav-item"><span class="nav-icon">🎨</span> Design Talk</button>
+    <button class="nav-item"><span class="nav-icon">💻</span> Dev Life</button>
+    <button class="nav-item"><span class="nav-icon">📸</span> Photography</button>
+    <button class="nav-item"><span class="nav-icon">🎵</span> Music Vibes</button>
+
+    <div class="sidebar-profile" style="margin-top:20px">
+      <div class="avatar-wrap">
+        <img class="avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop" alt="Me">
+        <div class="online-dot"></div>
+      </div>
+      <div>
+        <div class="profile-name">Arjun Sharma</div>
+        <div class="profile-handle">@arjun.sharma</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN FEED -->
+  <main class="feed">
+    <!-- CREATE POST -->
+    <div class="feed-header">
+      <div class="avatar-wrap">
+        <img class="avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop" alt="Me">
+        <div class="online-dot"></div>
+      </div>
+      <div style="flex:1">
+        <textarea class="post-input" id="postInput" placeholder="What's on your mind, Arjun?" rows="2"></textarea>
+        <div class="post-actions">
+          <button class="post-action-btn">📷 Photo</button>
+          <button class="post-action-btn">🎥 Video</button>
+          <button class="post-action-btn">😊 Feeling</button>
+          <button class="post-action-btn">📍 Location</button>
+          <button class="post-submit" onclick="createPost()">Post ✦</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STORIES -->
+    <div class="stories">
+      <div class="stories-title">Stories</div>
+      <div class="stories-scroll">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0">
+          <div class="story-add" onclick="showToast('📸','Add Story','Tap to share your moment!')">+</div>
+          <span style="font-size:.73rem;font-weight:600">Your Story</span>
+        </div>
+        <div class="story-item" onclick="viewStory('Priya')">
+          <div class="story-ring"><img class="story-img" src="https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=80&auto=format&fit=crop" alt=""></div>
+          <span class="story-name">Priya</span>
+        </div>
+        <div class="story-item" onclick="viewStory('Rahul')">
+          <div class="story-ring"><img class="story-img" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&auto=format&fit=crop" alt=""></div>
+          <span class="story-name">Rahul</span>
+        </div>
+        <div class="story-item" onclick="viewStory('Anjali')">
+          <div class="story-ring"><img class="story-img" src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&auto=format&fit=crop" alt=""></div>
+          <span class="story-name">Anjali</span>
+        </div>
+        <div class="story-item" onclick="viewStory('Dev')">
+          <div class="story-ring seen"><img class="story-img" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&auto=format&fit=crop" alt=""></div>
+          <span class="story-name">Dev</span>
+        </div>
+        <div class="story-item" onclick="viewStory('Meera')">
+          <div class="story-ring"><img class="story-img" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&auto=format&fit=crop" alt=""></div>
+          <span class="story-name">Meera</span>
+        </div>
+        <div class="story-item" onclick="viewStory('Kabir')">
+          <div class="story-ring"><img class="story-img" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&auto=format&fit=crop" alt=""></div>
+          <span class="story-name">Kabir</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- POSTS FEED -->
+    <div id="postsFeed"></div>
+  </main>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside class="sidebar-right">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" type="text" placeholder="Search VIBE...">
+    </div>
+
+    <!-- PROFILE CARD -->
+    <div class="widget" style="background:linear-gradient(135deg,rgba(108,92,231,.08),rgba(253,121,168,.06));border-radius:20px;padding:20px;text-align:center;margin-bottom:24px">
+      <div class="avatar-wrap" style="display:inline-block;margin-bottom:12px">
+        <img class="avatar-lg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop" alt="">
+        <div class="online-dot" style="width:14px;height:14px"></div>
+      </div>
+      <div style="font-weight:800;font-size:1.1rem">Arjun Sharma</div>
+      <div style="color:var(--muted);font-size:.85rem;margin-bottom:14px">@arjun.sharma · Full-Stack Dev 💻</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+        <div style="background:var(--white);border-radius:12px;padding:10px">
+          <div style="font-weight:800;font-size:1.1rem">248</div>
+          <div style="font-size:.72rem;color:var(--muted)">Posts</div>
+        </div>
+        <div style="background:var(--white);border-radius:12px;padding:10px">
+          <div style="font-weight:800;font-size:1.1rem">12.4K</div>
+          <div style="font-size:.72rem;color:var(--muted)">Followers</div>
+        </div>
+        <div style="background:var(--white);border-radius:12px;padding:10px">
+          <div style="font-weight:800;font-size:1.1rem">891</div>
+          <div style="font-size:.72rem;color:var(--muted)">Following</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUGGESTIONS -->
+    <div class="widget">
+      <div class="widget-title">People You May Know</div>
+      <div id="suggestionsList"></div>
+    </div>
+
+    <!-- TRENDING -->
+    <div class="widget">
+      <div class="widget-title">Trending Now 🔥</div>
+      <div class="trend-item" onclick="filterByTag('#webdev')">
+        <div class="trend-cat">Technology</div>
+        <div class="trend-tag">#webdev</div>
+        <div class="trend-count">24.3K posts</div>
+      </div>
+      <div class="trend-item" onclick="filterByTag('#UIDesign')">
+        <div class="trend-cat">Design</div>
+        <div class="trend-tag">#UIDesign</div>
+        <div class="trend-count">18.1K posts</div>
+      </div>
+      <div class="trend-item" onclick="filterByTag('#photography')">
+        <div class="trend-cat">Art</div>
+        <div class="trend-tag">#photography</div>
+        <div class="trend-count">41.7K posts</div>
+      </div>
+      <div class="trend-item" onclick="filterByTag('#travel')">
+        <div class="trend-cat">Lifestyle</div>
+        <div class="trend-tag">#travel</div>
+        <div class="trend-count">33.2K posts</div>
+      </div>
+      <div class="trend-item" onclick="filterByTag('#startup')">
+        <div class="trend-cat">Business</div>
+        <div class="trend-tag">#startup</div>
+        <div class="trend-count">9.8K posts</div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- NOTIFICATION TOAST -->
+<div class="toast-notif" id="toastNotif">
+  <div class="icon" id="toastIcon">🔔</div>
+  <div>
+    <div class="msg" id="toastMsg"></div>
+    <div class="sub" id="toastSub"></div>
+  </div>
+</div>
+
+<!-- IMAGE VIEWER -->
+<div class="img-viewer" id="imgViewer" onclick="closeViewer()">
+  <button class="img-viewer-close" onclick="closeViewer()">✕</button>
+  <img id="viewerImg" src="" alt="">
+</div>
+
+<script>
+const users = [
+  { id:1, name:'Priya Patel', handle:'@priya.patel', avatar:'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=80&auto=format&fit=crop', mutual:6 },
+  { id:2, name:'Rahul Verma', handle:'@rahul.v', avatar:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&auto=format&fit=crop', mutual:14 },
+  { id:3, name:'Anjali Singh', handle:'@anjali.s', avatar:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&auto=format&fit=crop', mutual:3 },
+  { id:4, name:'Dev Kumar', handle:'@dev.kumar', avatar:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&auto=format&fit=crop', mutual:22 },
+  { id:5, name:'Meera Joshi', handle:'@meeraj', avatar:'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&auto=format&fit=crop', mutual:8 },
+];
+
+let posts = [
+  {
+    id:1, userId:1, text:'Just finished a major UI redesign project for a fintech startup! 🚀 The process was challenging but so rewarding. #UIDesign #webdev',
+    img:'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=700&auto=format&fit=crop',
+    time:'2 hours ago', likes:247, comments:32, shares:18, liked:false, bookmarked:false,
+    commentsList:[
+      { author:'Rahul V', avatar:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=40&auto=format&fit=crop', text:'This looks incredible! What tools did you use?' },
+      { author:'Anjali S', avatar:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=40&auto=format&fit=crop', text:'Stunning work, Priya! 🔥 The color palette is 🤌' },
+    ], showComments:false
+  },
+  {
+    id:2, userId:2, text:'Golden hour at Marine Drive, Mumbai 🌇 Some moments just need to be shared. Life is beautiful when you slow down. #photography #travel #mumbai',
+    img:'https://images.unsplash.com/photo-1567157577867-05ccb1388e66?w=700&auto=format&fit=crop',
+    time:'4 hours ago', likes:892, comments:67, shares:45, liked:false, bookmarked:false,
+    commentsList:[
+      { author:'Meera J', avatar:'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&auto=format&fit=crop', text:'Mumbai sunsets hit differently! 😍' },
+    ], showComments:false
+  },
+  {
+    id:3, userId:3, text:"Hot take: Clean code is more important than fast code. I'd rather debug readable code than optimized spaghetti. Agree? 🧵 #webdev #coding #startup",
+    imgs:['https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&auto=format&fit=crop','https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&auto=format&fit=crop'],
+    time:'6 hours ago', likes:1243, comments:198, shares:312, liked:false, bookmarked:false,
+    commentsList:[
+      { author:'Dev K', avatar:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&auto=format&fit=crop', text:'Absolutely agree. Technical debt is real!' },
+      { author:'Priya P', avatar:'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=40&auto=format&fit=crop', text:'Disagree a bit — sometimes speed is a feature 😄' },
+    ], showComments:false
+  },
+  {
+    id:4, userId:4, text:"Morning routine update: 5am workouts have changed my life 💪 3 months in and I feel like a completely different person. Energy levels are through the roof! #fitness #lifestyle",
+    img:'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=700&auto=format&fit=crop',
+    time:'8 hours ago', likes:456, comments:41, shares:23, liked:false, bookmarked:false,
+    commentsList:[
+      { author:'Kabir', avatar:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&auto=format&fit=crop', text:'Inspiring! Started my 6am runs last week! 🏃' },
+    ], showComments:false
+  },
+];
+
+let followState = {};
+let socket;
+let liveMessageCount = 2;
+let notificationCount = 3;
+let currentPage = 'home';
+let userName = localStorage.getItem('vibe-user') || 'Arjun';
+
+function renderPosts() {
+  const feed = document.getElementById('postsFeed');
+  feed.innerHTML = posts.map(p => {
+    const user = users.find(u => u.id === p.userId);
+    const hashtagged = (p.text||'').replace(/#(\w+)/g, '<span class="hashtag" onclick="filterByTag(\'#$1\')">#$1</span>').replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+    return `
+    <div class="post-card" id="post-${p.id}">
+      <div class="post-top">
+        <div class="avatar-wrap">
+          <img class="avatar" src="${user.avatar}" alt="">
+          <div class="online-dot"></div>
+        </div>
+        <div class="post-user-info">
+          <div class="post-username">${user.name}</div>
+          <div class="post-time">${user.handle} · ${p.time}</div>
+        </div>
+        <button class="post-menu" onclick="postMenu(${p.id})">···</button>
+      </div>
+      <div class="post-text">${hashtagged}</div>
+      ${p.img ? `<img class="post-img" src="${p.img}" alt="" onclick="openViewer('${p.img}')">` : ''}
+      ${p.imgs ? `<div class="post-img-grid">${p.imgs.map(i=>`<img src="${i}" onclick="openViewer('${i}')" alt="">`).join('')}</div>` : ''}
+      <div class="post-stats">
+        <span class="post-stat-chip">❤️ ${p.likes.toLocaleString()}</span>
+        <span class="post-stat-chip">💬 ${p.comments}</span>
+        <span class="post-stat-chip">🔁 ${p.shares}</span>
+      </div>
+      <hr class="divider">
+      <div class="post-reactions">
+        <button class="reaction-btn ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">
+          ${p.liked?'❤️':'🤍'} ${p.liked?'Liked':'Like'}
+        </button>
+        <button class="reaction-btn commented" onclick="toggleComments(${p.id})">💬 Comment</button>
+        <button class="reaction-btn" onclick="sharePost(${p.id})">🔁 Share</button>
+        <button class="reaction-btn ${p.bookmarked?'liked':''}" onclick="toggleBookmark(${p.id})">
+          ${p.bookmarked?'🔖':'📄'} Save
+        </button>
+      </div>
+      ${p.showComments ? `
+        <hr class="divider">
+        <div class="comments-list">
+          ${p.commentsList.map(c=>`
+            <div class="comment-item">
+              <img class="avatar" style="width:34px;height:34px" src="${c.avatar}" alt="">
+              <div class="comment-bubble">
+                <div class="comment-author">${c.author}</div>
+                <div class="comment-text">${c.text}</div>
+                <div class="comment-actions">
+                  <button class="comment-action">👍 Like</button>
+                  <button class="comment-action">💬 Reply</button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="comment-input-row">
+          <img class="avatar" style="width:34px;height:34px" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=40&auto=format&fit=crop" alt="">
+          <input class="comment-input" type="text" placeholder="Write a comment..." id="commentInput-${p.id}" onkeydown="if(event.key==='Enter')addComment(${p.id})">
+          <button class="comment-send" onclick="addComment(${p.id})">➤</button>
+        </div>
+      ` : ''}
+    </div>
+    `;
+  }).join('');
+}
+
+function renderSuggestions() {
+  document.getElementById('suggestionsList').innerHTML = users.slice(0,4).map(u => `
+    <div class="suggested-user">
+      <img class="avatar" src="${u.avatar}" alt="">
+      <div>
+        <div style="font-weight:700;font-size:.88rem">${u.name}</div>
+        <div style="font-size:.75rem;color:var(--muted)">${u.mutual} mutual friends</div>
+      </div>
+      <button class="follow-btn ${followState[u.id]?'following':''}" onclick="toggleFollow(${u.id},this)">
+        ${followState[u.id]?'Following':'Follow'}
+      </button>
+    </div>
+  `).join('');
+}
+
+function updateBadges() {
+  const notifBadge = document.querySelector('.nav-item:nth-child(4) .nav-badge');
+  const msgBadge = document.querySelector('.nav-item:nth-child(5) .nav-badge');
+  if (notifBadge) notifBadge.textContent = notificationCount;
+  if (msgBadge) msgBadge.textContent = liveMessageCount;
+}
+
+function renderPageContent() {
+  const feed = document.getElementById('postsFeed');
+  const composer = document.querySelector('.feed-header');
+  const stories = document.querySelector('.stories');
+
+  if (currentPage === 'home') {
+    composer.style.display = '';
+    stories.style.display = '';
+    renderPosts();
+    return;
+  }
+
+  composer.style.display = 'none';
+  stories.style.display = 'none';
+
+  if (currentPage === 'explore') {
+    feed.innerHTML = `
+      <div class="page-panel">
+        <div class="page-card">
+          <h3>Explore new communities</h3>
+          <p>Find trending creators, design groups, and live conversations curated for you.</p>
+          <div class="page-list">
+            <div class="page-item"><strong>#UIUX</strong><span class="page-pill">+120 posts</span></div>
+            <div class="page-item"><strong>#AI Launchpad</strong><span class="page-pill">Live now</span></div>
+            <div class="page-item"><strong>Startup Circle</strong><span class="page-pill">New</span></div>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (currentPage === 'notifs') {
+    feed.innerHTML = `
+      <div class="page-panel">
+        <div class="page-card">
+          <h3>Notifications</h3>
+          <p>Stay updated with reactions, follows, and activity from your network.</p>
+          <div class="page-list">
+            <div class="page-item"><span><span class="live-dot"></span>Priya liked your redesign post</span><span class="page-pill">Now</span></div>
+            <div class="page-item"><span>Rahul commented on your travel story</span><span class="page-pill">8m</span></div>
+            <div class="page-item"><span>Anjali followed you</span><span class="page-pill">12m</span></div>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (currentPage === 'messages') {
+    feed.innerHTML = `
+      <div class="page-panel">
+        <div class="page-card">
+          <h3>Messages</h3>
+          <p>Open your live conversations and keep up with direct updates.</p>
+          <div class="page-list">
+            <div class="page-item"><strong>Priya</strong><span>Design review ready</span></div>
+            <div class="page-item"><strong>Rahul</strong><span>New photo drop</span></div>
+            <div class="page-item"><strong>Meera</strong><span>Let's sync tonight</span></div>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (currentPage === 'bookmarks') {
+    feed.innerHTML = `
+      <div class="page-panel">
+        <div class="page-card">
+          <h3>Bookmarks</h3>
+          <p>Your saved inspiration and posts are here.</p>
+          <div class="page-list">
+            <div class="page-item"><strong>Travel moodboard</strong><span class="page-pill">Saved</span></div>
+            <div class="page-item"><strong>Best UI patterns</strong><span class="page-pill">Saved</span></div>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  feed.innerHTML = `
+    <div class="page-panel">
+      <div class="page-card">
+        <h3>Profile</h3>
+        <p>${userName}, your network is growing and your activity is now live across the app.</p>
+      </div>
+    </div>`;
+}
+
+function connectRealtime() {
+  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  socket = new WebSocket(`${protocol}://${window.location.host}`);
+  socket.addEventListener('open', () => {
+    showToast('🟢','Realtime connected','Live updates are on.');
+  });
+  socket.addEventListener('message', (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === 'message' && data.message) {
+      liveMessageCount += 1;
+      notificationCount += 1;
+      updateBadges();
+      if (data.message.sender !== userName) {
+        showToast('💬', `${data.message.sender} sent a message`, data.message.text);
+      }
+      if (currentPage !== 'home') {
+        renderPageContent();
+      }
+    }
+  });
+  socket.addEventListener('close', () => {
+    showToast('⚠️','Realtime disconnected','Trying to reconnect...');
+  });
+}
+
+function toggleLike(id) {
+  const p = posts.find(x=>x.id===id);
+  p.liked = !p.liked;
+  p.likes += p.liked ? 1 : -1;
+  if(p.liked) showToast('❤️','You liked a post!',`${users.find(u=>u.id===p.userId).name}'s post`);
+  renderPosts();
+}
+
+function toggleComments(id) {
+  const p = posts.find(x=>x.id===id);
+  p.showComments = !p.showComments;
+  renderPosts();
+  if(p.showComments) setTimeout(()=>document.getElementById(`commentInput-${id}`)?.focus(),50);
+}
+
+function addComment(id) {
+  const p = posts.find(x=>x.id===id);
+  const input = document.getElementById(`commentInput-${id}`);
+  if(!input||!input.value.trim()) return;
+  p.commentsList.push({ author:userName, avatar:'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=40&auto=format&fit=crop', text:input.value.trim() });
+  p.comments++;
+  renderPosts();
+  showToast('💬','Comment posted!','Your comment is live.');
+  setTimeout(()=>document.getElementById(`commentInput-${id}`)?.focus(),50);
+}
+
+function toggleBookmark(id) {
+  const p = posts.find(x=>x.id===id);
+  p.bookmarked = !p.bookmarked;
+  showToast('🔖', p.bookmarked ? 'Post saved!' : 'Removed from bookmarks', 'Check Bookmarks tab.');
+  renderPosts();
+}
+
+function sharePost(id) {
+  const p = posts.find(x=>x.id===id);
+  p.shares++;
+  showToast('🔁','Post shared!','Shared to your profile.');
+  renderPosts();
+}
+
+function createPost() {
+  const input = document.getElementById('postInput');
+  if(!input.value.trim()) return;
+  const newPost = {
+    id: Date.now(), userId: Math.ceil(Math.random()*5),
+    text: input.value.trim(), time:'Just now',
+    likes:0, comments:0, shares:0, liked:false, bookmarked:false,
+    commentsList:[], showComments:false
+  };
+  posts.unshift(newPost);
+  input.value='';
+  renderPosts();
+  showToast('✦','Post shared!','Your post is now live!');
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({ type:'message', sender:userName, text: newPost.text, room:'global' }));
+  }
+}
+
+function toggleFollow(id, btn) {
+  followState[id] = !followState[id];
+  const u = users.find(x=>x.id===id);
+  if(followState[id]) showToast('👋',`Following ${u.name}!`,'They will be notified.');
+  renderSuggestions();
+}
+
+function filterByTag(tag) { showToast('🔥',`Trending: ${tag}`,'Filtering posts by tag...'); }
+function viewStory(name) { showToast('👁',`Viewing ${name}'s story`,'Story is loading...'); }
+function postMenu(id) { showToast('⚙️','Post options','Report, hide, or copy link.'); }
+function setPage(btn, page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPageContent();
+  showToast('📄',`Opened ${page.charAt(0).toUpperCase()+page.slice(1)}`,'The section is now live.');
+}
+
+function openViewer(src) {
+  document.getElementById('viewerImg').src = src;
+  document.getElementById('imgViewer').classList.add('open');
+}
+function closeViewer() { document.getElementById('imgViewer').classList.remove('open'); }
+
+function showToast(icon, msg, sub) {
+  const t = document.getElementById('toastNotif');
+  document.getElementById('toastIcon').textContent = icon;
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastSub').textContent = sub||'';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+localStorage.setItem('vibe-user', userName);
+updateBadges();
+renderPageContent();
+renderSuggestions();
+connectRealtime();
+</script>
+</body>
+</html>
